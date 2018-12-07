@@ -10,8 +10,8 @@
   "vendor_link": "Link to the target website",
   "categories": ["other"],
   "fields": {
-    "login": {
-      "type": "text"
+    "email": {
+      "type": "email"
     },
     "password": {
       "type": "password"

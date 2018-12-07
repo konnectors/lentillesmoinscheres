@@ -19,7 +19,7 @@ const request = requestFactory({
   jar: true
 })
 
-const baseUrl = 'http://books.toscrape.com'
+const baseUrl = 'https://www.lentillesmoinscheres.com'
 
 module.exports = new BaseKonnector(start)
 
@@ -28,49 +28,41 @@ module.exports = new BaseKonnector(start)
 // the account information come from ./konnector-dev-config.json file
 async function start(fields) {
   log('info', 'Authenticating ...')
-  await authenticate(fields.login, fields.password)
+  await authenticate(fields.email, fields.password)
   log('info', 'Successfully logged in')
-  // The BaseKonnector instance expects a Promise as return of the function
-  log('info', 'Fetching the list of documents')
-  const $ = await request(`${baseUrl}/index.html`)
-  // cheerio (https://cheerio.js.org/) uses the same api as jQuery (http://jquery.com/)
-  log('info', 'Parsing list of documents')
-  const documents = await parseDocuments($)
+  // // The BaseKonnector instance expects a Promise as return of the function
+  // log('info', 'Fetching the list of documents')
+  // const $ = await request(`${baseUrl}/index.html`)
+  // // cheerio (https://cheerio.js.org/) uses the same api as jQuery (http://jquery.com/)
+  // log('info', 'Parsing list of documents')
+  // const documents = await parseDocuments($)
 
-  // here we use the saveBills function even if what we fetch are not bills, but this is the most
-  // common case in connectors
-  log('info', 'Saving data to Cozy')
-  await saveBills(documents, fields, {
-    // this is a bank identifier which will be used to link bills to bank operations. These
-    // identifiers should be at least a word found in the title of a bank operation related to this
-    // bill. It is not case sensitive.
-    identifiers: ['books']
-  })
+  // // here we use the saveBills function even if what we fetch are not bills, but this is the most
+  // // common case in connectors
+  // log('info', 'Saving data to Cozy')
+  // await saveBills(documents, fields, {
+  //   // this is a bank identifier which will be used to link bills to bank operations. These
+  //   // identifiers should be at least a word found in the title of a bank operation related to this
+  //   // bill. It is not case sensitive.
+  //   identifiers: ['books']
+  // })
 }
 
 // this shows authentication using the [signin function](https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#module_signin)
 // even if this in another domain here, but it works as an example
-function authenticate(username, password) {
+function authenticate(email, password) {
   return signin({
-    url: `http://quotes.toscrape.com/login`,
-    formSelector: 'form',
-    formData: { username, password },
+    url: `${baseUrl}/client_login.php`,
+    formSelector: '#loginModal-form',
+    formData: { email, password },
     // the validate function will check if the login request was a success. Every website has
     // different ways respond: http status code, error message in html ($), http redirection
     // (fullResponse.request.uri.href)...
     validate: (statusCode, $, fullResponse) => {
-      log(
-        'debug',
-        fullResponse.request.uri.href,
-        'not used here but should be usefull for other connectors'
-      )
-      // The login in toscrape.com always works excepted when no password is set
-      if ($(`a[href='/logout']`).length === 1) {
+      if (fullResponse.request.uri.href === `${baseUrl}/client/home.php`) {
         return true
       } else {
-        // cozy-konnector-libs has its own logging function which format these logs with colors in
-        // standalone and dev mode and as JSON in production mode
-        log('error', $('.error').text())
+        log('error', 'error while login')
         return false
       }
     }
