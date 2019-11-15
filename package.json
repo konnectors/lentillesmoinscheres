@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "cozy-konnector-libs": "4.31.0",
-    "lodash": "^4.17.15"
+    "lodash": "4.17.15"
   },
   "devDependencies": {
     "copy-webpack-plugin": "5.0.5",
